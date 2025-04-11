@@ -31,21 +31,9 @@ const QuoteAuthor = styled.p`
 
 const quotes = [
   {
-    text: "真正的智慧不是知道一切，而是明白自己什么都不知道。",
-    author: "苏格拉底"
+    text: "我們不要在這裡，跟我回去十八歲，躲到台大校園杜鵑花叢下，不要被命運找到。\n",
+    author: "簡媜《陪我散步吧》"
   },
-  {
-    text: "人生的意义不在于拥有什么，而在于经历什么。",
-    author: "亚瑟·叔本华"
-  },
-  {
-    text: "知足常乐。",
-    author: "老子"
-  },
-  {
-    text: "勿以善小而不为，勿以恶小而为之。",
-    author: "刘备"
-  }
 ];
 
 const QuoteDisplay: React.FC = () => {
