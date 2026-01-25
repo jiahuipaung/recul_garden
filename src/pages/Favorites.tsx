@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import StatusBar from '../components/StatusBar';
-import imageCompression from 'browser-image-compression';
 import { motion } from 'framer-motion';
 import Masonry from 'react-masonry-css';
 
@@ -109,21 +108,19 @@ const Favorites: React.FC = () => {
   const getPhotos = async () => {
     try {
       console.log('开始获取照片列表...');
-      const modules = import.meta.glob('/public/assets/photos/*.{jpg,JPG,webp}', { 
-        eager: true, 
+      const modules = import.meta.glob('../assets/photos/*.webp', {
+        eager: true,
         query: '?url',
         import: 'default'
       });
       console.log('找到的模块:', modules);
-      
+
       const photoUrls = Object.values(modules).map(url => {
         const urlString = url as string;
-        const fileName = urlString.split('/').pop() || '';
-        const fullPath = `/assets/photos/${fileName}`;
-        console.log('处理图片路径:', { urlString, fileName, fullPath });
-        return fullPath;
+        console.log('处理图片路径:', urlString);
+        return urlString;
       });
-      
+
       console.log('处理后的照片URL列表:', photoUrls);
       setPhotos(photoUrls);
     } catch (error) {
@@ -133,30 +130,8 @@ const Favorites: React.FC = () => {
   };
 
   const processImage = async (photo: PhotoData): Promise<string> => {
-    try {
-      console.log('开始处理图片:', photo.src);
-      const response = await fetch(photo.src);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const blob = await response.blob();
-      console.log('获取到图片数据:', { size: blob.size, type: blob.type });
-      
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true
-      };
-
-      const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
-      const compressedFile = await imageCompression(file, options);
-      const url = URL.createObjectURL(compressedFile);
-      console.log('图片处理完成:', url);
-      return url;
-    } catch (error) {
-      console.error('压缩图片时出错:', error);
-      return photo.src;
-    }
+    // WebP 图片已经优化过，直接返回，无需二次压缩
+    return photo.src;
   };
 
   // 修改随机排序函数，添加尺寸分组

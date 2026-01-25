@@ -23,6 +23,7 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'terser',
+    chunkSizeWarningLimit: 1000, // 提高到 1MB
     terserOptions: {
       compress: {
         drop_console: true,
@@ -34,6 +35,8 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['styled-components', 'framer-motion'],
+          'markdown-vendor': ['react-markdown', 'remark-gfm'],
+          'email-vendor': ['@emailjs/browser'],
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',

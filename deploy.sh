@@ -10,11 +10,11 @@ tar -czf dist.tar.gz dist/
 
 # 上传到服务器
 echo "Uploading to server..."
-scp dist.tar.gz ubuntu@www.recul.xyz:~/
+scp dist.tar.gz ubuntu@49.234.181.165:~/
 
 # SSH到服务器执行部署
 echo "Deploying on server..."
-ssh ubuntu@www.recul.xyz << 'ENDSSH'
+ssh ubuntu@49.234.181.165 << 'ENDSSH'
     cd ~/
     sudo mv ~/dist.tar.gz /var/www/html/
     sudo rm -rf /var/www/html/dist/
@@ -99,5 +99,6 @@ ENDSSH
 # 清理本地文件
 echo "Cleaning up local files..."
 rm -f dist.tar.gz
+
 
 echo "Deployment completed!" 

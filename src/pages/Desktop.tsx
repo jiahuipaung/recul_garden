@@ -28,7 +28,7 @@ const Desktop = () => {
   const [isAboutMeOpen, setIsAboutMeOpen] = useState(false);
   const [isUserManualOpen, setIsUserManualOpen] = useState(false);
   // 桌面背景视频 URL
-  const videoUrl = '/assets/backgrounds/background-video.mp4';
+  const videoUrl = '/assets/backgrounds/background-video-optimized.mp4';
 
   return (
     <>
