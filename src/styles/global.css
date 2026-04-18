@@ -10,9 +10,6 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
 }
 
 a {
@@ -20,7 +17,10 @@ a {
   text-decoration: none;
 }
 
-#root {
+/* Desktop-only fullscreen lock (applied by Desktop page) */
+body.desktop-lock,
+body.desktop-lock #root {
+  overflow: hidden;
   height: 100vh;
   width: 100vw;
 } 

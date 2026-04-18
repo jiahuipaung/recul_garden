@@ -22,17 +22,10 @@ const QuoteText = styled.p`
   font-style: italic;
 `;
 
-const QuoteAuthor = styled.p`
-  font-size: 14px;
-  color: #666;
-  text-align: right;
-  font-weight: 500;
-`;
-
 const quotes = [
   {
     text: "我們不要在這裡，跟我回去十八歲，躲到台大校園杜鵑花叢下，不要被命運找到。\n",
-    author: "簡媜《陪我散步吧》"
+    // author: "簡媜《陪我散步吧》"
   },
 ];
 
@@ -48,7 +41,7 @@ const QuoteDisplay: React.FC = () => {
   return (
     <QuoteContainer>
       <QuoteText>"{quote.text}"</QuoteText>
-      <QuoteAuthor>— {quote.author}</QuoteAuthor>
+      {/* <QuoteAuthor>— {quote.author}</QuoteAuthor> */}
     </QuoteContainer>
   );
 };

@@ -1,83 +1,57 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import StatusBar from '../../components/StatusBar';
-import { getPostsByYear, PostData } from '../../utils/blogUtils';
-import BlogSidebar from '../../components/Blog/BlogSidebar';
+import { getPostsByYear } from '../../utils/blogUtils';
 import ArchiveItem from '../../components/Blog/ArchiveItem';
+import { blogTheme as t } from '../../styles/theme';
 
-const ArchiveContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 2rem;
-  padding-top: 4rem;
+const Header = styled.div`
+  margin-bottom: 32px;
 `;
 
-const MainContent = styled.main`
-  flex-grow: 1;
-  padding: 0 2rem;
-  max-width: 800px;
+const Eyebrow = styled.div`
+  font-family: ${t.sans};
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: ${t.muted};
+  margin-bottom: 8px;
 `;
 
-const SidebarWrapper = styled.div`
-  margin-right: 2rem;
+const Title = styled.h1`
+  font-family: ${t.serif};
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: ${t.ink};
+  margin: 0;
 `;
 
-const ArchiveTitle = styled.h1`
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: #333;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 0.5rem;
+const Empty = styled.p`
+  color: ${t.muted};
+  text-align: center;
+  margin-top: 40px;
+  font-family: ${t.body_serif};
 `;
 
 const Archive: React.FC = () => {
-  const [postsByYear, setPostsByYear] = useState<Record<string, PostData[]>>({});
-  const [years, setYears] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchArchive = async () => {
-      try {
-        setLoading(true);
-        const groupedPosts = await getPostsByYear();
-        setPostsByYear(groupedPosts);
-        
-        // 获取年份并按降序排序
-        const sortedYears = Object.keys(groupedPosts).sort((a, b) => Number(b) - Number(a));
-        setYears(sortedYears);
-      } catch (error) {
-        console.error('Error loading archive:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchArchive();
-  }, []);
+  const postsByYear = getPostsByYear();
+  const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 
   return (
     <>
-      <StatusBar />
-      <ArchiveContainer>
-        <SidebarWrapper>
-          <BlogSidebar />
-        </SidebarWrapper>
-        <MainContent>
-          <ArchiveTitle>Article Archive</ArchiveTitle>
-          {loading ? (
-            <p>Loading archive...</p>
-          ) : years.length > 0 ? (
-            years.map((year) => (
-              <ArchiveItem key={year} year={year} posts={postsByYear[year]} />
-            ))
-          ) : (
-            <p>No archive yet</p>
-          )}
-        </MainContent>
-      </ArchiveContainer>
+      <Header>
+        <Eyebrow>Every post, by year</Eyebrow>
+        <Title>Archive</Title>
+      </Header>
+      {years.length > 0 ? (
+        years.map(year => (
+          <ArchiveItem key={year} year={year} posts={postsByYear[year]} />
+        ))
+      ) : (
+        <Empty>No archive yet</Empty>
+      )}
     </>
   );
 };
 
-export default Archive; 
+export default Archive;

@@ -1,180 +1,285 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React from 'react';
+import { useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import StatusBar from '../../components/StatusBar';
-import { getPostData, PostData } from '../../utils/blogUtils';
-import BlogSidebar from '../../components/Blog/BlogSidebar';
+import { getPostById, getAdjacentPosts } from '../../utils/blogUtils';
+import { blogTheme as t } from '../../styles/theme';
 
-const PostContainer = styled.div`
+const Article = styled.article`
+  max-width: 720px;
+`;
+
+const Header = styled.header`
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid ${t.rule};
+`;
+
+const Meta = styled.div`
   display: flex;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 2rem;
-  padding-top: 4rem;
+  align-items: center;
+  gap: 10px;
+  font-family: ${t.sans};
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: ${t.muted};
+  margin-bottom: 18px;
 `;
 
-const MainContent = styled.main`
-  flex-grow: 1;
-  padding: 2rem;
-  max-width: 800px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+const MetaDivider = styled.span`
+  color: ${t.subtle};
 `;
 
-const SidebarWrapper = styled.div`
-  margin-right: 2rem;
+const MetaTag = styled(Link)`
+  color: ${t.accent};
+  text-decoration: none;
+  font-weight: 700;
+
+  &:hover {
+    color: ${t.accentHover};
+  }
 `;
 
 const PostTitle = styled.h1`
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-  color: #333;
+  font-family: ${t.serif};
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: ${t.ink};
+  line-height: 1.2;
+  margin: 0 0 8px 0;
 `;
 
-const PostDate = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
+const ReadingTime = styled.div`
+  font-family: ${t.body_serif};
+  font-size: 13px;
+  color: ${t.muted};
 `;
 
 const PostContent = styled.div`
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #333;
-  
+  font-family: ${t.body_serif};
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: ${t.body};
+
   h1, h2, h3, h4, h5, h6 {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    color: #222;
+    font-family: ${t.serif};
+    margin-top: 2.2rem;
+    margin-bottom: 0.9rem;
+    color: ${t.ink};
+    scroll-margin-top: 24px;
+    line-height: 1.3;
   }
-  
+
+  h1 { font-size: 1.9rem; }
   h2 {
-    font-size: 1.8rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.5rem;
+    font-size: 1.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid ${t.rule};
   }
-  
-  h3 {
-    font-size: 1.5rem;
-  }
-  
+  h3 { font-size: 1.3rem; }
+
   p {
-    margin-bottom: 1.5rem;
+    margin: 0 0 1.3rem 0;
   }
-  
+
   a {
-    color: #0078d7;
+    color: ${t.accent};
     text-decoration: none;
-    
+    border-bottom: 1px solid ${t.rule};
+
     &:hover {
-      text-decoration: underline;
+      border-bottom-color: ${t.accent};
     }
   }
-  
+
   blockquote {
-    border-left: 4px solid #ddd;
-    padding-left: 1rem;
-    margin-left: 0;
-    color: #666;
+    border-left: 3px solid ${t.accent};
+    padding: 4px 0 4px 20px;
+    margin: 1.4rem 0;
+    color: ${t.muted};
+    font-style: italic;
   }
-  
+
   code {
-    background-color: #f5f5f5;
-    padding: 0.2rem 0.4rem;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    background-color: #f6f6f4;
+    padding: 2px 6px;
     border-radius: 3px;
+    font-size: 0.88em;
   }
-  
+
   pre {
-    background-color: #f5f5f5;
-    padding: 1rem;
-    border-radius: 5px;
+    background-color: #f6f6f4;
+    padding: 18px;
+    border-radius: 4px;
     overflow-x: auto;
-    
+    margin: 1.3rem 0;
+    border: 1px solid ${t.rule};
+
     code {
       background-color: transparent;
       padding: 0;
     }
   }
-  
+
   ul, ol {
-    margin-bottom: 1.5rem;
-    padding-left: 2rem;
+    margin: 0 0 1.3rem 0;
+    padding-left: 1.6rem;
   }
-  
+
+  li {
+    margin-bottom: 0.4rem;
+  }
+
   img {
     max-width: 100%;
-    border-radius: 5px;
-    margin: 1rem 0;
+    margin: 1.4rem 0;
+  }
+
+  strong {
+    font-weight: 700;
+    color: ${t.ink};
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid ${t.rule};
+    margin: 2rem 0;
   }
 `;
 
-const ErrorMessage = styled.div`
-  color: #d32f2f;
-  padding: 2rem;
-  text-align: center;
-  background-color: #ffebee;
-  border-radius: 5px;
+const Footer = styled.footer`
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid ${t.rule};
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 720px;
 `;
+
+const NavCell = styled(Link)<{ $align: 'left' | 'right' }>`
+  flex: 1;
+  text-decoration: none;
+  text-align: ${p => p.$align};
+  color: ${t.body};
+
+  &:hover h4 {
+    color: ${t.accent};
+  }
+`;
+
+const NavLabel = styled.div`
+  font-family: ${t.sans};
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: ${t.muted};
+  margin-bottom: 6px;
+`;
+
+const NavTitle = styled.h4`
+  font-family: ${t.serif};
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: ${t.ink};
+  margin: 0;
+  line-height: 1.4;
+  transition: color 0.15s;
+`;
+
+const NotFound = styled.div`
+  padding: 80px 0;
+  text-align: center;
+  color: ${t.muted};
+  font-family: ${t.body_serif};
+`;
+
+function headingId(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fff\-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function getHeadingText(children: React.ReactNode): string {
+  if (typeof children === 'string') return children;
+  return React.Children.toArray(children)
+    .map(c => (typeof c === 'string' ? c : ''))
+    .join('');
+}
+
+const H1 = ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+  <h1 id={headingId(getHeadingText(children))} {...props}>{children}</h1>
+);
+const H2 = ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+  <h2 id={headingId(getHeadingText(children))} {...props}>{children}</h2>
+);
+const H3 = ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+  <h3 id={headingId(getHeadingText(children))} {...props}>{children}</h3>
+);
+
+const markdownComponents = { h1: H1, h2: H2, h3: H3 };
 
 const PostDetail: React.FC = () => {
   const { id } = useParams();
-  const [post, setPost] = useState<PostData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const post = id ? getPostById(id) : undefined;
+  const { prev, next } = id ? getAdjacentPosts(id) : {};
 
-  useEffect(() => {
-    if (id) {
-      const fetchPost = async () => {
-        try {
-          setLoading(true);
-          const postData = await getPostData(id);
-          setPost(postData);
-        } catch (err) {
-          console.error('Error loading post:', err);
-          setError('Failed to load post');
-        } finally {
-          setLoading(false);
-        }
-      };
+  if (!post) {
+    return <NotFound>Post not found</NotFound>;
+  }
 
-      fetchPost();
-    }
-  }, [id]);
+  const displayDate = post.date
+    ? dayjs(post.date).format('MMMM D, YYYY').toUpperCase()
+    : post.formattedDate;
+  const primaryTag = post.tags[0];
 
   return (
-    <>
-      <StatusBar />
-      <PostContainer>
-        <SidebarWrapper>
-          <BlogSidebar />
-        </SidebarWrapper>
-        <MainContent>
-          {loading ? (
-            <p>Loading post...</p>
-          ) : error ? (
-            <ErrorMessage>{error}</ErrorMessage>
-          ) : post ? (
+    <Article>
+      <Header>
+        <Meta>
+          <span>{displayDate}</span>
+          {primaryTag && (
             <>
-              <PostTitle>{post.title}</PostTitle>
-              <PostDate>{post.formattedDate}</PostDate>
-              <PostContent>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {post.content}
-                </ReactMarkdown>
-              </PostContent>
+              <MetaDivider>│</MetaDivider>
+              <MetaTag to={`/blog/tags/${encodeURIComponent(primaryTag)}`}>
+                {primaryTag}
+              </MetaTag>
             </>
-          ) : (
-            <ErrorMessage>Post not found</ErrorMessage>
           )}
-        </MainContent>
-      </PostContainer>
-    </>
+        </Meta>
+        <PostTitle>{post.title}</PostTitle>
+        <ReadingTime>{post.readingTime} min read</ReadingTime>
+      </Header>
+
+      <PostContent>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          {post.content}
+        </ReactMarkdown>
+      </PostContent>
+
+      {(prev || next) && (
+        <Footer>
+          {prev ? (
+            <NavCell to={`/blog/${prev.id}`} $align="left">
+              <NavLabel>← Previous</NavLabel>
+              <NavTitle>{prev.title}</NavTitle>
+            </NavCell>
+          ) : <div style={{ flex: 1 }} />}
+          {next ? (
+            <NavCell to={`/blog/${next.id}`} $align="right">
+              <NavLabel>Next →</NavLabel>
+              <NavTitle>{next.title}</NavTitle>
+            </NavCell>
+          ) : <div style={{ flex: 1 }} />}
+        </Footer>
+      )}
+    </Article>
   );
 };
 
-export default PostDetail; 
+export default PostDetail;

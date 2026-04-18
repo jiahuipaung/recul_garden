@@ -5,12 +5,14 @@ import { theme } from './styles/theme';
 
 // 懒加载所有路由组件
 const Desktop = lazy(() => import('./pages/Desktop'));
-const Blog = lazy(() => import('./pages/Blog'));
+const BlogLayout = lazy(() => import('./components/Blog/BlogLayout'));
+const Overview = lazy(() => import('./pages/Blog/Overview'));
 const Archive = lazy(() => import('./pages/Blog/Archive'));
 const PostDetail = lazy(() => import('./pages/Blog/PostDetail'));
+const Tag = lazy(() => import('./pages/Blog/Tag'));
+const About = lazy(() => import('./pages/Blog/About'));
 const Favorites = lazy(() => import('./pages/Favorites'));
 const Email = lazy(() => import('./pages/Email'));
-const Database = lazy(() => import('./pages/Database'));
 const Reading = lazy(() => import('./pages/Reading'));
 
 // 简单的加载组件
@@ -39,12 +41,15 @@ function App() {
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
             <Route path="/" element={<Desktop />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/archive" element={<Archive />} />
-            <Route path="/blog/:id" element={<PostDetail />} />
+            <Route path="/blog" element={<BlogLayout />}>
+              <Route index element={<Overview />} />
+              <Route path="archive" element={<Archive />} />
+              <Route path="tags/:tag" element={<Tag />} />
+              <Route path="about" element={<About />} />
+              <Route path=":id" element={<PostDetail />} />
+            </Route>
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/email" element={<Email />} />
-            <Route path="/database" element={<Database />} />
             <Route path="/reading" element={<Reading />} />
           </Routes>
         </Suspense>

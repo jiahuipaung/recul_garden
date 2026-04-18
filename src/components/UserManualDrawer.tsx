@@ -93,14 +93,16 @@ const UserManualDrawer: React.FC<UserManualDrawerProps> = ({ isOpen, onClose }) 
             <Title>Introduction</Title>
             
             <Text>
-                A place where I record my thoughts and share my knowledge.
-            </Text>
-
-            <Text>
-                If you have any questions, you can contact me by any means you can find.
+                I'm Javen, and this is where I record my life and thoughts.
             </Text>
             <Text>
-                Wish you a good day : ）
+                I have two kittens—one named Tiaotiao and the other named Muffin. You can find their photos in the Favorites.
+            </Text>
+            <Text>
+                If you have any questions, you can contact me by any ways you can find.
+            </Text>
+            <Text>
+                Wish you a good day : )
             </Text>
           </Drawer>
         </>

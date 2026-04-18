@@ -12,7 +12,6 @@ import BlogIcon from '../components/icons/BlogIcon';
 import FavoritesIcon from '../components/icons/FavoritesIcon';
 import EmailIcon from '../components/icons/EmailIcon';
 import AboutMeIcon from '../components/icons/AboutMeIcon';
-import DatabaseIcon from '../components/icons/DatabaseIcon';
 import ReadingIcon from '../components/icons/ReadingIcon';
 import QuoteDisplay from '../components/QuoteDisplay';
 
@@ -88,20 +87,12 @@ const Email: React.FC = () => {
             position={{ top: '50px', right: '30px' }}
           />
 
-          {/* 数据库图标 */}
-          <DesktopIcon
-            icon={<DatabaseIcon />}
-            label="Database"
-            to="/database"
-            position={{ bottom: '150px', left: '30px' }}
-          />
-
           {/* 阅读图标 */}
           <DesktopIcon
             icon={<ReadingIcon />}
             label="Reading"
             to="/reading"
-            position={{ bottom: '30px', right: '30px' }}
+            position={{ bottom: '150px', left: '30px' }}
           />
 
           {/* 名言显示 */}

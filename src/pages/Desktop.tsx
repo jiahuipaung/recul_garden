@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import AnimatedBackground from '../components/AnimatedBackground';
 import DesktopIcon from '../components/DesktopIcon';
@@ -12,7 +12,6 @@ import BlogIcon from '../components/icons/BlogIcon';
 import FavoritesIcon from '../components/icons/FavoritesIcon';
 import EmailIcon from '../components/icons/EmailIcon';
 import AboutMeIcon from '../components/icons/AboutMeIcon';
-import DatabaseIcon from '../components/icons/DatabaseIcon';
 import ReadingIcon from '../components/icons/ReadingIcon';
 import QuoteDisplay from '../components/QuoteDisplay';
 
@@ -29,6 +28,11 @@ const Desktop = () => {
   const [isUserManualOpen, setIsUserManualOpen] = useState(false);
   // 桌面背景视频 URL
   const videoUrl = '/assets/backgrounds/background-video-optimized.mp4';
+
+  useEffect(() => {
+    document.body.classList.add('desktop-lock');
+    return () => document.body.classList.remove('desktop-lock');
+  }, []);
 
   return (
     <>
@@ -75,20 +79,12 @@ const Desktop = () => {
             position={{ top: '50px', right: '30px' }}
           />
 
-          {/* 数据库图标 */}
-          <DesktopIcon
-            icon={<DatabaseIcon />}
-            label="Database"
-            to="/database"
-            position={{ bottom: '150px', left: '30px' }}
-          />
-
           {/* 阅读图标 */}
           <DesktopIcon
             icon={<ReadingIcon />}
             label="Reading"
             to="/reading"
-            position={{ bottom: '30px', right: '30px' }}
+            position={{ bottom: '150px', left: '30px' }}
           />
 
           {/* 名言显示 */}

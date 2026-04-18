@@ -259,7 +259,7 @@ VITE_APP_API_URL = https://recul-garden.vercel.app
 ### 构建大小超过 100MB
 - 确保已删除原始 JPG 文件
 - 检查 public 目录: `du -sh public/assets/photos/`
-- 考虑进一步压缩 WebP 质量（修改 `scripts/optimizeImages.js`）
+- 考虑进一步压缩 WebP 质量（修改 `scripts/addPhotos.js` 里的 `quality: 80`）
 
 ### Vercel 部署失败
 - 查看构建日志找到具体错误

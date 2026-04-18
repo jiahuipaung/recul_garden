@@ -1,6 +1,11 @@
 import dayjs from 'dayjs';
 
-// 文章类型定义
+export interface TOCItem {
+  level: number;
+  text: string;
+  id: string;
+}
+
 export interface PostData {
   id: string;
   title: string;
@@ -8,163 +13,135 @@ export interface PostData {
   formattedDate: string;
   excerpt: string;
   content: string;
+  tags: string[];
+  readingTime: number;
 }
 
-// 解析markdown文件的front matter
-function parseFrontMatter(markdown: string): { data: any; content: string } {
+// 解析 markdown 文件的 front matter
+function parseFrontMatter(markdown: string): { data: Record<string, string>; content: string } {
   const match = markdown.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) {
     return { data: {}, content: markdown };
   }
 
-  const frontMatter = match[1];
-  const content = match[2];
-
-  // 解析front matter
-  const data: any = {};
-  frontMatter.split('\n').forEach(line => {
-    const [key, ...valueParts] = line.split(':');
-    if (key && valueParts.length > 0) {
-      const value = valueParts.join(':').trim();
-      // 移除引号
-      data[key.trim()] = value.replace(/^"(.*)"$/, '$1');
-    }
+  const data: Record<string, string> = {};
+  match[1].split('\n').forEach(line => {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex === -1) return;
+    const key = line.slice(0, colonIndex).trim();
+    const value = line.slice(colonIndex + 1).trim().replace(/^"(.*)"$/, '$1');
+    if (key) data[key] = value;
   });
 
-  return { data, content: content.trim() };
+  return { data, content: match[2].trim() };
 }
 
-// 获取所有文章数据
-export async function getAllPosts(): Promise<PostData[]> {
-  try {
-    // 从/posts.json获取文章列表
-    const response = await fetch('/posts.json');
-    if (!response.ok) {
-      console.error('Failed to fetch posts.json:', response.status, response.statusText);
-      throw new Error(`Failed to fetch posts: ${response.status} ${response.statusText}`);
-    }
-    const fileNames = await response.json();
-    console.log('Fetched posts.json:', fileNames);
-    
-    // 获取所有文章详情
-    const allPostsData = await Promise.all(
-      fileNames
-        .filter((fileName: string) => fileName.endsWith('.md'))
-        .map(async (fileName: string) => {
-          try {
-            // 移除 ".md" 获取文件ID
-            const id = fileName.replace(/\.md$/, '');
+// 计算阅读时间（中文 400 字/分钟，英文 200 词/分钟）
+function calculateReadingTime(content: string): number {
+  const chineseChars = (content.match(/[\u4e00-\u9fff]/g) || []).length;
+  const englishWords = content.replace(/[\u4e00-\u9fff]/g, '').split(/\s+/).filter(Boolean).length;
+  const minutes = Math.ceil(chineseChars / 400 + englishWords / 200);
+  return Math.max(1, minutes);
+}
 
-            // 读取markdown文件内容
-            const response = await fetch(`/posts/${fileName}`);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch post: ${fileName} (${response.status} ${response.statusText})`);
-            }
-            const fileContents = await response.text();
-            console.log(`Fetched post ${fileName} successfully`);
-
-            // 解析markdown文件的front matter
-            const { data, content } = parseFrontMatter(fileContents);
-
-            const date = data.date;
-            const formattedDate = dayjs(date).format('YYYY年MM月DD日');
-
-            // 合并数据
-            return {
-              id,
-              title: data.title,
-              date,
-              formattedDate,
-              excerpt: data.excerpt || '',
-              content
-            };
-          } catch (error) {
-            console.error(`Error processing post ${fileName}:`, error);
-            throw error;
-          }
-        })
-    );
-
-    // 按日期排序
-    return allPostsData.sort((a, b) => {
-      if (a.date < b.date) {
-        return 1;
-      } else {
-        return -1;
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching posts:', error);
-    throw error;
+// 从 markdown 内容提取目录
+export function extractTOC(content: string): TOCItem[] {
+  const headingRegex = /^(#{1,3})\s+(.+)$/gm;
+  const toc: TOCItem[] = [];
+  let match;
+  while ((match = headingRegex.exec(content)) !== null) {
+    const text = match[2].trim();
+    const id = text
+      .toLowerCase()
+      .replace(/[^\w\u4e00-\u9fff\-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    toc.push({ level: match[1].length, text, id });
   }
+  return toc;
 }
 
-// 获取所有文章的ID
-export async function getAllPostIds() {
-  try {
-    const response = await fetch('/posts.json');
-    if (!response.ok) {
-      throw new Error('Failed to fetch posts');
-    }
-    const fileNames = await response.json();
-    
-    return fileNames
-      .filter((fileName: string) => fileName.endsWith('.md'))
-      .map((fileName: string) => {
-        return {
-          params: {
-            id: fileName.replace(/\.md$/, '')
-          }
-        };
-      });
-  } catch (error) {
-    console.error('Error fetching post IDs:', error);
-    return [];
-  }
-}
+// 构建时自动发现并加载所有 markdown 文件
+const modules = import.meta.glob('../content/posts/*.md', {
+  eager: true,
+  query: '?raw',
+  import: 'default',
+}) as Record<string, string>;
 
-// 根据ID获取文章数据
-export async function getPostData(id: string): Promise<PostData> {
-  try {
-    const response = await fetch(`/posts/${id}.md`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch post: ${id}`);
-    }
-    const fileContents = await response.text();
+// 一次性解析所有文章
+const allPosts: PostData[] = Object.entries(modules)
+  .map(([path, raw]) => {
+    const fileName = path.split('/').pop()!.replace(/\.md$/, '');
+    const { data, content } = parseFrontMatter(raw);
+    const date = data.date || '';
+    const tags = data.tags
+      ? data.tags.split(',').map(t => t.trim()).filter(Boolean)
+      : [];
 
-    // 解析markdown文件的front matter
-    const { data, content } = parseFrontMatter(fileContents);
-    
-    const date = data.date;
-    const formattedDate = dayjs(date).format('YYYY年MM月DD日');
-
-    // 合并数据
     return {
-      id,
-      title: data.title,
+      id: fileName,
+      title: data.title || fileName,
       date,
-      formattedDate,
+      formattedDate: date ? dayjs(date).format('YYYY年MM月DD日') : '',
       excerpt: data.excerpt || '',
-      content
+      content,
+      tags,
+      readingTime: calculateReadingTime(content),
     };
-  } catch (error) {
-    console.error(`Error fetching post ${id}:`, error);
-    throw error;
-  }
+  })
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+// 收集所有标签（去重）
+const allTags: string[] = [...new Set(allPosts.flatMap(p => p.tags))].sort();
+
+// ── 导出的查询函数（全部同步） ──────────────────────────
+
+export function getAllPosts(): PostData[] {
+  return allPosts;
 }
 
-// 按年份归档文章
-export async function getPostsByYear(): Promise<Record<string, PostData[]>> {
-  const posts = await getAllPosts();
-  const postsByYear: Record<string, PostData[]> = {};
+export function getPostById(id: string): PostData | undefined {
+  return allPosts.find(p => p.id === id);
+}
 
-  posts.forEach(post => {
+export function getPostsByYear(): Record<string, PostData[]> {
+  const byYear: Record<string, PostData[]> = {};
+  for (const post of allPosts) {
     const year = dayjs(post.date).format('YYYY');
-    if (!postsByYear[year]) {
-      postsByYear[year] = [];
-    }
-    postsByYear[year].push(post);
-  });
+    if (!byYear[year]) byYear[year] = [];
+    byYear[year].push(post);
+  }
+  return byYear;
+}
 
-  return postsByYear;
-} 
+export function getAllTags(): string[] {
+  return allTags;
+}
+
+export function getTagCounts(): Array<{ tag: string; count: number }> {
+  const counts = new Map<string, number>();
+  for (const post of allPosts) {
+    for (const tag of post.tags) {
+      counts.set(tag, (counts.get(tag) || 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
+
+export function getRecentPosts(limit = 5): PostData[] {
+  return allPosts.slice(0, limit);
+}
+
+export function getPostsByTag(tag: string): PostData[] {
+  return allPosts.filter(p => p.tags.includes(tag));
+}
+
+export function getAdjacentPosts(id: string): { prev?: PostData; next?: PostData } {
+  const idx = allPosts.findIndex(p => p.id === id);
+  if (idx === -1) return {};
+  return {
+    next: idx > 0 ? allPosts[idx - 1] : undefined,
+    prev: idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined,
+  };
+}

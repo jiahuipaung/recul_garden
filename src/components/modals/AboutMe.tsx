@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { AiOutlineGithub, AiOutlineLinkedin } from 'react-icons/ai';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import aboutMeRaw from '../../content/about-me.md?raw';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -45,7 +47,7 @@ const WindowButton = styled.div`
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  
+
   &:nth-child(1) { background-color: #ff5f56; }
   &:nth-child(2) { background-color: #ffbd2e; }
   &:nth-child(3) { background-color: #27c93f; }
@@ -59,41 +61,51 @@ const Content = styled.div`
   background-color: white;
 `;
 
-const Title = styled.h1`
-  font-size: 36px;
-  margin-bottom: 10px;
+const MarkdownBody = styled.div`
   color: #333;
-  font-weight: 600;
-`;
+  line-height: 1.7;
 
-const Subtitle = styled.h2`
-  font-size: 24px;
-  color: #666;
-  margin-bottom: 15px;
-  font-weight: normal;
-`;
-
-const Text = styled.p`
-  font-size: 16px;
-  line-height: 1.6;
-  color: #444;
-  margin-bottom: 10px;
-`;
-
-const SocialLinks = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-top: 15px;
-  justify-content: flex-start;
-`;
-
-const SocialLink = styled.a`
-  color: #666;
-  font-size: 24px;
-  transition: color 0.2s;
-  
-  &:hover {
+  h1 {
+    font-size: 36px;
+    margin-bottom: 8px;
     color: #333;
+    font-weight: 600;
+  }
+
+  h2 {
+    font-size: 24px;
+    color: #666;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    font-weight: normal;
+  }
+
+  p {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #444;
+  }
+
+  ul {
+    padding-left: 20px;
+    margin-bottom: 12px;
+  }
+
+  li {
+    font-size: 16px;
+    color: #444;
+    margin-bottom: 6px;
+  }
+
+  a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #333;
+      text-decoration: underline;
+    }
   }
 `;
 
@@ -116,49 +128,15 @@ const AboutMeModal: React.FC<AboutMeModalProps> = ({ isOpen, onClose }) => {
           </WindowControls>
         </TopBar>
         <Content>
-          <Title>Hi, Jiahui here</Title>
-          <Subtitle>Welcome to my digital garden 🌱</Subtitle>
-          <Text>
-            My name is Jiahui Pang, a backend engineer based in Beijing🇨🇳 or Macao🇲🇴
-          </Text>
-          <Text>
-          It is hard to introduce oneself, and it probably means that people will describe a person who they want to establish.
-          </Text>
-          <Text>
-            So, who am I? I can only list a few basics to help you understand me better.
-          </Text>
-          <Subtitle>Experience 💼</Subtitle>
-          <Text>
-            Master of Science in Computer Science @UM, 2025.08 - Present
-          </Text>
-          <Text>
-            Software Engineer @tp-link, 2023.07 - 2025.03
-          </Text>
-          <Text>
-            Bachelor of Science in Automation @HUST, 2019.09 - 2023.06
-          </Text>
-          <Subtitle>Personal Tags 📝</Subtitle>
-          <Text>
-            Programmer, Reading, American/Enlish/Japanese/Korean drama
-          </Text>
-          <Text>
-            C/C++, Python, Golang, Docker, Kubernetes, React, etc.
-          </Text>
-          <SocialLinks>
-            <SocialLink href="https://github.com/jiahuipaung" target="_blank" rel="noopener noreferrer">
-              <AiOutlineGithub />
-            </SocialLink>
-            <SocialLink href="https://linkedin.com/in/jiahui-pang-510065352/" target="_blank" rel="noopener noreferrer">
-              <AiOutlineLinkedin />
-            </SocialLink>
-            <SocialLink href="https://" target="_blank" rel="noopener noreferrer">
-              <AiOutlineLinkedin />
-            </SocialLink>
-          </SocialLinks>
+          <MarkdownBody>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {aboutMeRaw}
+            </ReactMarkdown>
+          </MarkdownBody>
         </Content>
       </ModalContent>
     </ModalOverlay>
   );
 };
 
-export default AboutMeModal; 
+export default AboutMeModal;

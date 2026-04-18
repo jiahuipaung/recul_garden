@@ -1,77 +1,81 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import dayjs from 'dayjs';
 import { PostData } from '../../utils/blogUtils';
+import { blogTheme as t } from '../../styles/theme';
 
-interface ArchiveItemProps {
-  year: string;
-  posts: PostData[];
-}
-
-const YearSection = styled(motion.section)`
-  margin-bottom: 2rem;
+const YearSection = styled.section`
+  margin-bottom: 40px;
 `;
 
 const YearHeading = styled.h2`
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #eee;
-  color: #333;
+  font-family: ${t.serif};
+  font-size: 2rem;
+  font-weight: 700;
+  color: ${t.ink};
+  margin: 0 0 18px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid ${t.rule};
 `;
 
 const PostList = styled.ul`
   list-style: none;
   padding: 0;
+  margin: 0;
 `;
 
-const PostItem = styled(motion.li)`
+const PostItem = styled.li`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 0.75rem 0;
-  border-bottom: 1px dashed #eee;
-  
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px dashed ${t.rule};
+
   &:last-child {
     border-bottom: none;
   }
 `;
 
 const PostLink = styled(Link)`
-  color: #333;
+  font-family: ${t.body_serif};
+  color: ${t.ink};
   text-decoration: none;
-  font-size: 1rem;
-  transition: color 0.2s;
-  
+  font-size: 15px;
+  line-height: 1.5;
+  flex: 1;
+
   &:hover {
-    color: #0078d7;
+    color: ${t.accent};
   }
 `;
 
 const PostDate = styled.span`
-  color: #666;
-  font-size: 0.85rem;
+  font-family: ${t.sans};
+  color: ${t.muted};
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
 `;
+
+interface ArchiveItemProps {
+  year: string;
+  posts: PostData[];
+}
 
 const ArchiveItem: React.FC<ArchiveItemProps> = ({ year, posts }) => {
   return (
-    <YearSection
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <YearHeading>{year} Year</YearHeading>
+    <YearSection>
+      <YearHeading>{year}</YearHeading>
       <PostList>
-        {posts.map((post) => (
-          <PostItem
-            key={post.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
+        {posts.map(post => (
+          <PostItem key={post.id}>
             <PostLink to={`/blog/${post.id}`}>{post.title}</PostLink>
-            <PostDate>{post.formattedDate.split('-')[1]}</PostDate>
+            <PostDate>
+              {post.date ? dayjs(post.date).format('MMM D') : ''}
+            </PostDate>
           </PostItem>
         ))}
       </PostList>
@@ -79,4 +83,4 @@ const ArchiveItem: React.FC<ArchiveItemProps> = ({ year, posts }) => {
   );
 };
 
-export default ArchiveItem; 
+export default ArchiveItem;
